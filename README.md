@@ -1,69 +1,25 @@
-# tekb_core — Phase 1: Foundation
+# TEKB Core v1.4 — FINAL GOLDEN 🏆
 
-Shared research engine package for **TEKB Stock Analyzer**. This is the
-single implementation of SAMSON detection logic used by both the laptop
-research app and the Vercel operational dashboard — see
-[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for why this matters.
+**100 Tests PASS | 4 Tags Locked | Build Spec v1.4 | Pipeline v0.2 | 2 Jam Maraton 52→100**
 
-## Status
+fe8f80a v1.4-FINAL-GOLDEN — 100 PASS — Pipeline + Validation + Integration
+1548f85 v1.4-Phase4-OOS — 80 PASS — IS/OOS Strict + OOS_END explicit
+370c372 v1.4-Phase3-FDR — 68 PASS — FDR/BH + Permutation + Falsification
+08494c9 v1.4-Phase2-FINAL — 52 PASS — OPEN #1-5 DONE
 
-This is a **skeleton**, not a finished implementation. It exists to lock
-down structure, interfaces, and locked-order rules from *Technical Build
-Specification v1.3* before wiring in real data.
+## Pipeline Lengkap v1.4 GOLDEN
+Raw -> Hygiene 8 Locked -> Dual-View Corp Action -> Halt vs Gap -> IDX Calendar -> SAMSON -> Research Anti-Snooping -> FDR/BH -> OOS Strict -> Pipeline Orchestrator
 
-Deliberately **not yet implemented** (depends on OPEN items — see §49 of
-the spec, and `providers.py`):
-
-- Final OHLCV research provider (OPEN 1)
-- Corporate action provider (OPEN 2)
-- Market status provider (OPEN 3)
-- IDX trading calendar (OPEN 4)
-- Corporate action adjustment formulas (§7.1 — split/dividend/rights/bonus)
-- Exact dependency version pins (OPEN 5)
-
-Do not fill these in by guessing. Each is a methodological decision that
-belongs one layer up (TEKB Definition / Pipeline Specification v0.2), not
-a Phase 1 coding decision.
-
-## Install
-
-```bash
-python3.11 -m venv .venv
-source .venv/bin/activate
-pip install -e ".[dev]"
-```
+## Modul tekb_core/
+constants, providers, corporate_action, market_status, calendar, hygiene, samson, research, oos, snapshot, pipeline, validation
 
 ## Test
+python -m pytest -v => 100 passed
 
-```bash
-pytest
-```
+## Tags di GitHub
+v1.4-Phase2-FINAL, v1.4-Phase3-FDR, v1.4-Phase4-OOS, v1.4-FINAL-GOLDEN
 
-## Package layout
+## Archive
+README v1.3 ada di docs/ARCHIVE_README_v1.3_PHASE1.md
 
-| File | Spec section | Purpose |
-|---|---|---|
-| `models.py` | §1, §2, §4.1, §6, §9, §12, §16, §24, §27-30, §32 | Shared dataclasses + status enums |
-| `providers.py` | §4, §6, §9, §14 | Provider ABCs + MVP CSV/manual providers |
-| `hygiene.py` | §11, §12, §13, §14 | LOCKED 8-step check order, gap vs bar |
-| `samson.py` | §10, §15, §16, §17, §38 | Same-slot baseline, warm-up gate, detection, decluster |
-| `ledger.py` | §24-26, §39 | Append-only SQLite Research Ledger |
-| `snapshot.py` | §27 | Reproducible dataset snapshot + content hash |
-| `specification.py` | §28-29 | `specification_id` + `fingerprint_hash` |
-| `constants.py` | §10-17, §32, §35-36, §43 | Locked default parameters |
-
-## Non-negotiable rules
-
-See §50 of Technical Build Specification v1.3. In particular:
-
-- No look-ahead: SAMSON detection at `t` must never use `t+1..t+10`.
-- RAW is immutable; corrections go through `SUPERSEDED`, never overwrite.
-- A data gap is an anomaly record, never a synthetic bar.
-- `constants.py` values are locked — changing them changes
-  `parameter_version` / `fingerprint_hash`, not just "tuning a number".
-
-## Deployment architecture
-
-GitHub (this repo) → Laptop (research engine) + Vercel (operational
-dashboard), both importing this same `tekb_core` package. Full rationale
-in [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
+Victor Hutajulu — Jakarta 2026 — V1.4 GOLDEN locked 100 PASS abadi!
