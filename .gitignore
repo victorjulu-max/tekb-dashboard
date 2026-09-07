@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+*.egg-info/
+build/
+dist/
+
+# Test / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Research data — never commit large datasets to Git (see ARCHITECTURE.md)
+*.db
+*.sqlite
+*.sqlite3
+*.parquet
+data/raw/
+data/normalized/
+data/adjusted/
+*.csv
+
+# Env / secrets
+.env
+.env.local
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
