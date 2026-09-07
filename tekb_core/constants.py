@@ -70,3 +70,6 @@ SUPPORTED_TIMEFRAMES = ("5M", "15M", "1H", "4H", "1D")
 # --- Alert terminology (§19) — BUY/SELL are forbidden -----------------------
 ALERT_TERMS = ("DETECTED", "WATCH", "POTENTIAL_EDGE", "TESTED", "OOS_VALIDATED", "PROVEN")
 FORBIDDEN_ALERT_TERMS = ("BUY", "SELL")
+# --- Research Engine (Phase 3) ---
+RESEARCH_WARMUP_BARS = 50
+MIN_RESEARCH_BARS = 20
