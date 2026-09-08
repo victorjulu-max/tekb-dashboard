@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   const fallbackPrices = { BBCA: 9750, TLKM: 3350 };
   let livePrices = {...fallbackPrices };
