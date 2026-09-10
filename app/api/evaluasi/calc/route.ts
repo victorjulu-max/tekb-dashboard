@@ -6,7 +6,16 @@ const redis = Redis.fromEnv();
 
 const TIMEOUT_DAYS = 20;
 
-type Signal = { tanggal: string; kode: string; entry: number; sl: number; tp: number; action: "BUY"|"SELL" };
+type Signal = {
+  signalId?: string;
+  tanggal: string;
+  jam?: string;
+  kode: string;
+  entry: number;
+  sl: number;
+  tp: number;
+  action: "BUY"|"SELL"
+};
 
 async function fetchOHLC(kode: string, fromDate: string) {
   const symbol = `${kode}.JK`;
@@ -70,7 +79,8 @@ export async function GET() {
   for (const sig of signals) {
     const ohlc = await fetchOHLC(sig.kode, sig.tanggal);
     const evalRes = evaluateSignal(sig, ohlc);
-    results.push({...sig,...evalRes });
+    const signalId = sig.signalId || `${sig.kode}-${sig.tanggal}-${sig.jam || '00:00'}-${sig.action}`;
+    results.push({...sig, signalId,...evalRes });
   }
   const closed = results.filter(r=> ["TP_HIT","SL_HIT","TIMEOUT"].includes(r.outcome));
   const tp = results.filter(r=> r.outcome==="TP_HIT").length;
@@ -83,7 +93,7 @@ export async function GET() {
     summary: {
       total: results.length, tp, sl, timeout, ambiguous: amb, open,
       closed: closed.length, winRate: Number(winRate.toFixed(2)),
-      formula: "WinRate = TP / (TP+SL+TIMEOUT) | Return = (Exit-Entry)/Entry"
+      formula: "Key = KODE-TGL-JAM-ACTION | WinRate = TP/(TP+SL+TIMEOUT)"
     },
     results: results.sort((a,b)=> b.tanggal.localeCompare(a.tanggal))
   });

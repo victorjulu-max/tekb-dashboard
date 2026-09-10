@@ -19,9 +19,14 @@ export async function POST(req: Request) {
     const existing = (await redis.get("tekb:evaluasi")) as any[] || [];
     let tambah = 0;
     for (const r of rows) {
-      const ada = existing.some((x:any) => x.tanggal === r.tanggal && x.kode === r.kode);
+      // FIX #3: pakai signalId, bukan tanggal+kode doang
+      const key = r.signalId || `${r.kode}-${r.tanggal}-${r.jam || '00:00'}-${r.action}`;
+      const ada = existing.some((x:any) => {
+        const xKey = x.signalId || `${x.kode}-${x.tanggal}-${x.jam || '00:00'}-${x.action}`;
+        return xKey === key;
+      });
       if (!ada) {
-        existing.push(r);
+        existing.push({...r, signalId: key});
         tambah++;
       }
     }
