@@ -53,8 +53,8 @@ function evaluateSignal(sig: Signal, ohlc: any[]) {
       hitTP = d.high >= sig.tp;
       hitSL = d.low <= sig.sl;
     } else { // SELL
-      hitTP = d.low <= sig.tp; // TP di bawah entry
-      hitSL = d.high >= sig.sl; // SL di atas entry
+      hitTP = d.low <= sig.tp;
+      hitSL = d.high >= sig.sl;
     }
 
     if (hitTP && hitSL) {
@@ -81,7 +81,8 @@ function evaluateSignal(sig: Signal, ohlc: any[]) {
 }
 
 export async function GET() {
-  const signals = (await redis.get("tekb:evaluasi")) as Signal[] || [];
+  // FIX KOTA 6: samain kunci jadi evaluasi:signals biar sinkron sama route.ts
+  const signals = (await redis.get("evaluasi:signals")) as Signal[] || [];
   const results = [];
   for (const sig of signals) {
     const ohlc = await fetchOHLC(sig.kode, sig.tanggal);
