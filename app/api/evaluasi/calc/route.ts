@@ -47,21 +47,28 @@ function evaluateSignal(sig: Signal, ohlc: any[]) {
 
   for (let i=0; i<slice.length; i++) {
     const d = slice[i];
-    const hitTP = d.high >= sig.tp;
-    const hitSL = d.low <= sig.sl;
+    // FIX #4: SELL logic - TP di bawah, SL di atas
+    let hitTP = false, hitSL = false;
+    if (sig.action === "BUY") {
+      hitTP = d.high >= sig.tp;
+      hitSL = d.low <= sig.sl;
+    } else { // SELL
+      hitTP = d.low <= sig.tp; // TP di bawah entry
+      hitSL = d.high >= sig.sl; // SL di atas entry
+    }
 
     if (hitTP && hitSL) {
-      return { outcome: "AMBIGUOUS_INTRABAR" as const, hitDate: d.date, days: i+1, exitPrice: null, returnPct: null, note: `High ${d.high} >= TP ${sig.tp} & Low ${d.low} <= SL ${sig.sl}` };
+      return { outcome: "AMBIGUOUS_INTRABAR" as const, hitDate: d.date, days: i+1, exitPrice: null, returnPct: null, note: `BUY: H ${d.high}>=TP ${sig.tp} & L ${d.low}<=SL ${sig.sl} | SELL: L ${d.low}<=TP ${sig.tp} & H ${d.high}>=SL ${sig.sl}` };
     }
     if (hitTP) {
       const exitPrice = sig.tp;
-      const returnPct = (exitPrice - sig.entry) / sig.entry;
-      return { outcome: "TP_HIT" as const, hitDate: d.date, days: i+1, exitPrice, returnPct, note: `High ${d.high} -> TP ${sig.tp}` };
+      const returnPct = sig.action === "BUY"? (exitPrice - sig.entry)/sig.entry : (sig.entry - exitPrice)/sig.entry;
+      return { outcome: "TP_HIT" as const, hitDate: d.date, days: i+1, exitPrice, returnPct, note: `${sig.action} TP Hit ${sig.action==="BUY"? d.high : d.low} -> TP ${sig.tp}` };
     }
     if (hitSL) {
       const exitPrice = sig.sl;
-      const returnPct = (exitPrice - sig.entry) / sig.entry;
-      return { outcome: "SL_HIT" as const, hitDate: d.date, days: i+1, exitPrice, returnPct, note: `Low ${d.low} -> SL ${sig.sl}` };
+      const returnPct = sig.action === "BUY"? (exitPrice - sig.entry)/sig.entry : (sig.entry - exitPrice)/sig.entry;
+      return { outcome: "SL_HIT" as const, hitDate: d.date, days: i+1, exitPrice, returnPct, note: `${sig.action} SL Hit ${sig.action==="BUY"? d.low : d.high} -> SL ${sig.sl}` };
     }
   }
   if (slice.length < TIMEOUT_DAYS) {
@@ -69,8 +76,8 @@ function evaluateSignal(sig: Signal, ohlc: any[]) {
   }
   const last = slice[slice.length-1];
   const exitPrice = last.close;
-  const returnPct = (exitPrice - sig.entry) / sig.entry;
-  return { outcome: "TIMEOUT" as const, hitDate: last.date, days: TIMEOUT_DAYS, exitPrice, returnPct, note: `Timeout close ${exitPrice}` };
+  const returnPct = sig.action === "BUY"? (exitPrice - sig.entry)/sig.entry : (sig.entry - exitPrice)/sig.entry;
+  return { outcome: "TIMEOUT" as const, hitDate: last.date, days: TIMEOUT_DAYS, exitPrice, returnPct, note: `Timeout close ${exitPrice} return ${(returnPct*100).toFixed(2)}%` };
 }
 
 export async function GET() {
@@ -89,11 +96,13 @@ export async function GET() {
   const amb = results.filter(r=> r.outcome==="AMBIGUOUS_INTRABAR").length;
   const open = results.filter(r=> r.outcome==="OPEN").length;
   const winRate = closed.length? (tp / closed.length * 100) : 0;
+  const avgReturn = closed.length? closed.reduce((a,b)=> a+(b.returnPct||0),0)/closed.length : 0;
   return NextResponse.json({
     summary: {
       total: results.length, tp, sl, timeout, ambiguous: amb, open,
       closed: closed.length, winRate: Number(winRate.toFixed(2)),
-      formula: "Key = KODE-TGL-JAM-ACTION | WinRate = TP/(TP+SL+TIMEOUT)"
+      avgReturn: Number((avgReturn*100).toFixed(2)),
+      formula: "SELL: TP=Low<=TP, SL=High>=SL | Return BUY=(Exit-Entry)/Entry, SELL=(Entry-Exit)/Entry | Expectancy=avg CLOSED"
     },
     results: results.sort((a,b)=> b.tanggal.localeCompare(a.tanggal))
   });
